@@ -5,7 +5,6 @@ import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
@@ -22,7 +21,6 @@ import java.util.regex.Pattern;
 
 
 public class OmniScraper {
-    //private final WebClient client;
     private final String          username;
     private final String          password;
     private final String          subdomain;
@@ -38,8 +36,8 @@ public class OmniScraper {
                         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537" +
                         ".36")
                 .build();
-        
-        this.webClient = new WebClient();
+    
+        this.webClient = new WebClient(defaultChromeVersion);
         webClient.getOptions().setJavaScriptEnabled(true);
         webClient.getOptions().setCssEnabled(false);
         webClient.getOptions().setDownloadImages(false);
@@ -61,43 +59,14 @@ public class OmniScraper {
         HtmlPage homepage = initConnection();
         
         try {
-            //OmnivoxSchedule schedule = new OmnivoxSchedule(this, getSimpleConnection(
-            //        homepage.select("#ctl00_partOffreServices_offreV2_HOR").attr("href")).method(Connection.Method.POST).execute());
-            //Connection.Response response = getSimpleConnection("/estd/vl.ovx?lk=%2festd%2fhrre%2fhoraire" +
-            //                                                   ".ovx&c=VAN&l=ANG&s1=601&s2=701&s3=390&s4=203").execute();
-            //Connection.Response response = getSimpleConnection("/estd/vl.ovx?lk=%2festd%2fhrre%2fhoraire.ovx").execute();
+            //TODO: Add compatibility for other portals. Dawson's portal uses the name "Course Schedule" instead of "My Schedule" and is
+            // the 5th item in the list, whereas it's the 11th item in the list for Vanier.
+            // here is a screenshot of dawson's "My Omnivox Services": https://imgur.com/kB9qNiK
+            //
             HtmlPage schedulePage = ((HtmlAnchor) homepage.getFirstByXPath(
                     "/html/body/form/table/tbody/tr[1]/td/table/tbody/tr/td[1]/div[2]/ul[2]/li[11]/a")).click();
-            
-            //Connection.Response response1 = getSimpleConnection(
-            //        homepage.select("#ctl00_partOffreServices_offreV2_HOR").attr("href")).execute();
-            
-            //System.out.println(response1.body());
-            
-            HtmlElement body = schedulePage.getBody();
-            //System.out.println(body.getAttributes());
-            //String javascripOnloadCode = body.getAttribute("onload");
-            //Pattern locationReplaceURLPattern = Pattern.compile("location\\.replace\\('LoadSession\\.ovx\\?veriflogin=sso&Ref=(.*)" +
-            //"&C=VAN&L=ANG&lk=%2Festd%2Fhrre%2Fhoraire%2Eovx'\\);");
-            //Matcher locationReplaceURLMatcher = locationReplaceURLPattern.matcher(javascripOnloadCode);
-            //locationReplaceURLMatcher.matches();
-            //System.out.println(locationReplaceURLMatcher.toMatchResult().group(1));
-            //String ref = locationReplaceURLMatcher.group(1);
-            
-            //updateCookies(response.cookies());
-            
-            
-            //assert cookies.containsKey("comn") && cookies.containsKey("DTKS") && cookies.containsKey("lngomn") &&
-            //       cookies.containsKey("L") && cookies.containsKey("k") && cookies.containsKey("TKSVANP") &&
-            //       cookies.containsKey("ASPSESSIONIDCUCSQABR") && cookies.containsKey("TypeIndividu") && cookies.containsKey(
-            //        "UsersNbCouleurs") && cookies.containsKey("TypeProfil") && cookies.containsKey("IdControlDefault") &&
-            //       cookies.containsKey("IsSessionInitialise") && cookies.containsKey("Resolution") && cookies.containsKey(
-            //        "ParametresModule") && cookies.containsKey("TKINTR") && cookies.containsKey(".ASPXROLES");
-            
+    
             OmnivoxSchedule schedule = new OmnivoxSchedule(this, schedulePage);
-            //OmnivoxSchedule schedule1 = new OmnivoxSchedule(this, getSimpleConnection("/estd/hrre/horaire.ovx").execute());
-            //System.out.println(homepage.select("#ctl00_partOffreServices_offreV2_HOR").attr("href"));
-            //System.out.println(schedule.getSemesters().stream().filter(OmnivoxSemester::isCurrent).findFirst().get().getPage().asXml());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -131,20 +100,11 @@ public class OmniScraper {
     private HtmlPage initConnection() {
         try {
             HtmlPage response = webClient.getPage("https://" + this.subdomain + ".omnivox.ca/Login/Account/Login?ReturnUrl=%2fintr");
-            
-            //updateCookies(response.cookies());
-            
-            //FormElement form = (FormElement) document.select("form#formLogin").first();
             HtmlForm form = response.getFormByName("formLogin");
             
             String k = form.getInputByName("k").getValueAttribute();
-            //String StatsEnvUsersNbCouleurs = document.select("input[name=StatsEnvUsersNbCouleurs]").first().val();
-            //String StatsEnvUsersResolution = document.select("input[name=StatsEnvUsersResolution]").first().val();
             WebRequest loginPostRequest = new WebRequest(
                     new URL("https://" + this.subdomain + ".omnivox.ca/intr/Module/Identification/Login/Login.aspx"), HttpMethod.POST);
-            //loginPostRequest.setAdditionalHeaders(
-            //        Map.of("NoDA", username, "PasswordEtu", password, "TypeIdentification", "Etudiant", "TypeLogin", "PostSolutionLogin",
-            //               "k", k));
             List<NameValuePair> requestParams = new ArrayList<>();
             requestParams.add(new NameValuePair("NoDA", username));
             requestParams.add(new NameValuePair("PasswordEtu", password));
@@ -153,11 +113,8 @@ public class OmniScraper {
             requestParams.add(new NameValuePair("k", k));
             loginPostRequest.setRequestParameters(requestParams);
             
-            //updateCookies(loginResponse.cookies());
             
             HtmlPage homePage = webClient.getPage(loginPostRequest);
-            //System.out.println(doc.html() + "\n\n\n\n\n\n\n\n");
-            //System.out.println(loginResponse.url());
             
             return homePage;
         } catch (IOException e) {

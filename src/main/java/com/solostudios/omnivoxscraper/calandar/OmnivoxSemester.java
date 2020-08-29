@@ -84,9 +84,6 @@ public class OmnivoxSemester {
         genDayList();
         genClassList(scheduleTable);
         
-        //System.out.println("Course List: " + courseList);
-        //System.out.println("Class List: " + Arrays.toString(classList));
-        //System.out.println("Days: " + days);
         System.out.println(this);
     }
     
@@ -123,8 +120,6 @@ public class OmnivoxSemester {
                     System.out.print(remainingCourseLength[j].getKey() + ".| ");
                     continue;
                 }
-                //if (((HtmlElement) scheduleRow.getCell(0).getFirstByXPath("./font/b")).getTextContent().strip().matches("\u00A0"))
-                //    continue;
                 
                 String textElement = scheduleRow.getCell(k)
                                                 .getFirstByXPath("./font/text()[1]")
@@ -168,8 +163,6 @@ public class OmnivoxSemester {
             if (courseRow.getCells().size() < 4 || courseRow.getByXPath("./td/font/b/span").size() > 1)
                 continue;
             // Use String#strip() and not String#trim(), because String#strip() is unicode-aware.
-            // (For some reason there\"s a non-breaking space in there which is U+00A0)
-//*[@id="tblContenuSSO"]/table/tbody/tr/td/table/tbody/tr/td/center/table/tbody/tr/td/table[2]/tbody/tr[10]/td[5]
             String    courseDates   = ((HtmlElement) courseRow.getFirstByXPath("./td[1]/font/span")).getTextContent().strip();
             String    courseNumber  = ((HtmlElement) courseRow.getFirstByXPath("./td[2]/font/span")).getTextContent().strip();
             String    courseSection = ((HtmlElement) courseRow.getFirstByXPath("./td[3]/font/span")).getTextContent().strip();
@@ -185,6 +178,7 @@ public class OmnivoxSemester {
             else
                 courseExtraInfo = "";
             
+            // Why is there a non breaking space in this...
             courseDates = courseDates.replaceAll("\\u00A0", "");
             courseNumber = courseNumber.replaceAll("\\u00A0", "");
             courseSection = courseSection.replaceAll("\\u00A0", "");

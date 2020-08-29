@@ -23,13 +23,6 @@ public class OmnivoxSchedule {
     
     public OmnivoxSchedule(OmniScraper scraper, HtmlPage coursePage) throws IOException {
         this.scraper = scraper;
-        
-        //coursePage = coursePage.url(new URL("https://vaniercollege-estd.omnivox.ca/estd/hrre/LoadSession.ovx?veriflogin=sso&amp;
-        // Ref=214450102272&amp;C=VAN&amp;L=ANG&amp;lk=%2Festd%2Fhrre%2Fhoraire%2Eovx"));
-        
-        //Document document = coursePage.parse();
-        
-        //this.semester = getSemester(coursePage);
         this.semesters = new ArrayList<>();
         for (HtmlOption semesterElement : ((HtmlSelect) coursePage.getElementByName("AnSession")).getOptions()) {
             OmnivoxSemester semester = getSemester(semesterElement, coursePage);
@@ -59,11 +52,8 @@ public class OmnivoxSchedule {
         WebRequest          semesterRequest = new WebRequest(semesterUrl, HttpMethod.POST);
         List<NameValuePair> semesterParams  = new ArrayList<>();
         
-        //semesterParams.add(new NameValuePair("Ref", ref));
         semesterParams.add(new NameValuePair("AnSession", scheduleOption.getValueAttribute()));
         semesterParams.add(new NameValuePair("Confirm", "Obtain+my+schedule"));
-        //semesterParams.add(new NameValuePair("C", "VAN"));
-        //semesterParams.add(new NameValuePair("L", "ANG"));
         semesterRequest.setRequestParameters(semesterParams);
         HtmlPage schedulePage = scraper.getWebClient().getPage(semesterRequest);
         

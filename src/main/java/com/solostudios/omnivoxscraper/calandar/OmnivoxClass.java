@@ -20,6 +20,26 @@ public class OmnivoxClass {
         this.isOnline = isOnline;
     }
     
+    public Duration getClassDuration() {
+        return classDuration;
+    }
+    
+    public LocalTime getClassStartTime() {
+        return classStartTime;
+    }
+    
+    public OmnivoxCourse getCourse() {
+        return course;
+    }
+    
+    public OmnivoxDay getDay() {
+        return day;
+    }
+    
+    public boolean isOnline() {
+        return isOnline;
+    }
+    
     @Override
     public String toString() {
         return toJSONString();
