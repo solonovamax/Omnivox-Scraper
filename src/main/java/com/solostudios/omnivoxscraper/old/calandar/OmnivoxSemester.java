@@ -1,4 +1,4 @@
-package com.solostudios.omnivoxscraper.calandar;
+package com.solostudios.omnivoxscraper.old.calandar;
 
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -132,20 +132,21 @@ public class OmnivoxSemester {
                     System.out.print(textElement + " | ");
                     remainingCourseLength[j] = new MutablePair<>(textElement, scheduleRow.getCell(k).getRowSpan() - 1);
                     boolean isOnline = scheduleRow.getCell(k).getFirstByXPath("./font/font/b/i/text()") != null;
-                    OmnivoxClass omnivoxClass = new OmnivoxClass(Duration.ofMinutes(scheduleRow.getCell(k).getRowSpan() * 30),
-                                                                 LocalTime.parse(classTime),
-                                                                 courseList.stream()
-                                                                           .filter((course) -> course.getCourseNumber()
-                                                                                                     .equals(textElement.replaceFirst(
-                                                                                                             "(\\d{3}-[A-Z0-9]{3}-[A-Z0-9" +
-                                                                                                             "]{2}) sec\\.\\d{5}",
-                                                                                                             "$1")))
-                                                                           .findAny()
-                                                                           .get(), days.get(j), isOnline);
+                    OmnivoxClass
+                            omnivoxClass = new OmnivoxClass(Duration.ofMinutes(scheduleRow.getCell(k).getRowSpan() * 30),
+                                                            LocalTime.parse(classTime),
+                                                            courseList.stream()
+                                                                      .filter((course) -> course.getCourseNumber()
+                                                                                                .equals(textElement.replaceFirst(
+                                                                                                        "(\\d{3}-[A-Z0-9]{3}-[A-Z0-9" +
+                                                                                                        "]{2}) sec\\.\\d{5}",
+                                                                                                        "$1")))
+                                                                      .findAny()
+                                                                      .get(), days.get(j), isOnline);
                     courseList.stream()
                               .filter((course) -> course.getCourseNumber().equals(textElement))
                               .forEach(omnivoxCourse -> omnivoxCourse.addClass(omnivoxClass));
-                    
+    
                     classList[j].add(omnivoxClass);
                     days.get(j).addClass(omnivoxClass);
                 } else {

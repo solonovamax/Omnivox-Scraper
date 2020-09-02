@@ -1,4 +1,4 @@
-package com.solostudios.omnivoxscraper.calandar;
+package com.solostudios.omnivoxscraper.old.calandar;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -7,7 +7,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.solostudios.omnivoxscraper.OmniScraper;
+import com.solostudios.omnivoxscraper.old.OmniScraper;
 
 import java.io.IOException;
 import java.net.URL;

@@ -12,5 +12,12 @@ repositories {
 dependencies {
     //testCompile group: 'junit', name: 'junit', version: '4.12'
     implementation("net.sourceforge.htmlunit:htmlunit:2.43.0")
+    implementation("org.mnode.ical4j:ical4j:3.0.19")
     //implementation("org.jsoup:jsoup:1.13.1")
+}
+
+javadoc {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.runtimeClasspath
+    ((StandardJavadocDocletOptions) options).tags("apiNote:a:API Note:", "implSpec:a:Implementation Requirements:", "implNote:a:Implementation Note:")
 }

@@ -1,4 +1,4 @@
-package com.solostudios.omnivoxscraper.calandar;
+package com.solostudios.omnivoxscraper.old.calandar;
 
 public class CalendarAccessException extends Exception {
     public CalendarAccessException() {

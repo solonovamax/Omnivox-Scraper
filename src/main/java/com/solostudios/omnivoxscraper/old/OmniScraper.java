@@ -1,4 +1,4 @@
-package com.solostudios.omnivoxscraper;
+package com.solostudios.omnivoxscraper.old;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -8,8 +8,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.solostudios.omnivoxscraper.calandar.OmnivoxSchedule;
-import com.solostudios.omnivoxscraper.calandar.OmnivoxSemester;
+import com.solostudios.omnivoxscraper.old.calandar.OmnivoxSchedule;
+import com.solostudios.omnivoxscraper.old.calandar.OmnivoxSemester;
 
 import java.io.IOException;
 import java.net.URL;

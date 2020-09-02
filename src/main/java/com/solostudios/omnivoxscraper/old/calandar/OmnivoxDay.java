@@ -1,4 +1,4 @@
-package com.solostudios.omnivoxscraper.calandar;
+package com.solostudios.omnivoxscraper.old.calandar;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;

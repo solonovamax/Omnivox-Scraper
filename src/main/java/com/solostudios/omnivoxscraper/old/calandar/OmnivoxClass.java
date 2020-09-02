@@ -1,4 +1,4 @@
-package com.solostudios.omnivoxscraper.calandar;
+package com.solostudios.omnivoxscraper.old.calandar;
 
 import java.time.Duration;
 import java.time.LocalTime;
@@ -11,8 +11,8 @@ public class OmnivoxClass {
     private final OmnivoxDay    day;
     private final boolean       isOnline;
     
-    public OmnivoxClass(Duration classDuration, LocalTime classStartTime, OmnivoxCourse course,
-                        OmnivoxDay day, boolean isOnline) {
+    public OmnivoxClass(Duration classDuration, LocalTime classStartTime, com.solostudios.omnivoxscraper.old.calandar.OmnivoxCourse course,
+                        com.solostudios.omnivoxscraper.old.calandar.OmnivoxDay day, boolean isOnline) {
         this.classDuration = classDuration;
         this.classStartTime = classStartTime;
         this.course = course;
@@ -28,11 +28,11 @@ public class OmnivoxClass {
         return classStartTime;
     }
     
-    public OmnivoxCourse getCourse() {
+    public com.solostudios.omnivoxscraper.old.calandar.OmnivoxCourse getCourse() {
         return course;
     }
     
-    public OmnivoxDay getDay() {
+    public com.solostudios.omnivoxscraper.old.calandar.OmnivoxDay getDay() {
         return day;
     }
     
