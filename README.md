@@ -12,7 +12,8 @@ to something designed to actually function as an API.
 - No functionality defined in the current state of the API is guaranteed to make it into the final version.
 - Functionality may be changed or removed without any prior notice and at any time.
 
-
+## Running Tests
+To run the tests, you must set `omnivox_username` and `omnivox_password` in `gradle.properties`.
 
 ## Contributing
 just open a pull request lmao

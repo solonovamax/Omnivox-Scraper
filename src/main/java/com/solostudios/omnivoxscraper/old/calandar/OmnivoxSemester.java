@@ -45,6 +45,25 @@ public class OmnivoxSemester {
         initCalendar(semesterPage);
     }
     
+    private void initCalendar(HtmlPage semesterPage) {
+        HtmlTable courseTable = semesterPage.getFirstByXPath(
+                "//*[@id=\"tblContenuSSO\"]/table/tbody/tr/td/table/tbody/tr/td/center/table/tbody/tr/td/table[2]");
+        HtmlTable scheduleTable = semesterPage.getFirstByXPath("//*[@id=\"pageHoraire\"]/tbody/tr[2]/td[2]/table");
+        
+        genCourseList(courseTable);
+        genDayList();
+        genClassList(scheduleTable);
+    
+        System.out.println(this);
+    }
+    
+    private void genDayList() {
+        for (int i = 0; i < 7; i++) {
+            days.add(new OmnivoxDay(this, DayOfWeek.of(i + 1)));
+            classList[i] = new ArrayList<>();
+        }
+    }
+    
     /**
      * Formats dates from the provided [First 3 letters of month]-[days] to the ISO-8601 standard.
      *
@@ -71,26 +90,46 @@ public class OmnivoxSemester {
                 .replace("Dec", "12");
     }
     
-    public HtmlPage getPage() {
-        return page;
-    }
-    
-    private void initCalendar(HtmlPage semesterPage) {
-        HtmlTable courseTable = semesterPage.getFirstByXPath(
-                "//*[@id=\"tblContenuSSO\"]/table/tbody/tr/td/table/tbody/tr/td/center/table/tbody/tr/td/table[2]");
-        HtmlTable scheduleTable = semesterPage.getFirstByXPath("//*[@id=\"pageHoraire\"]/tbody/tr[2]/td[2]/table");
-        
-        genCourseList(courseTable);
-        genDayList();
-        genClassList(scheduleTable);
-        
-        System.out.println(this);
-    }
-    
-    private void genDayList() {
-        for (int i = 0; i < 7; i++) {
-            days.add(new OmnivoxDay(this, DayOfWeek.of(i + 1)));
-            classList[i] = new ArrayList<>();
+    private void genCourseList(HtmlTable courseTable) {
+        for (HtmlTableRow courseRow : courseTable.getRows()) {
+            if (courseRow.getCells().size() < 4 || courseRow.getByXPath("./td/font/b/span").size() > 1)
+                continue;
+            // Use String#strip() and not String#trim(), because String#strip() is unicode-aware.
+            String    courseDates   = ((HtmlElement) courseRow.getFirstByXPath("./td[1]/font/span")).getTextContent().strip();
+            String    courseNumber  = ((HtmlElement) courseRow.getFirstByXPath("./td[2]/font/span")).getTextContent().strip();
+            String    courseSection = ((HtmlElement) courseRow.getFirstByXPath("./td[3]/font/span")).getTextContent().strip();
+            String    courseTitle   = ((HtmlElement) courseRow.getFirstByXPath("./td[4]/font/span")).getTextContent().strip();
+            String    courseTeacher = ((HtmlElement) courseRow.getFirstByXPath("./td[5]/font/span")).getTextContent().strip();
+            HtmlTable hoursTable    = courseRow.getFirstByXPath("./td[6]/table");
+            String    theoryHours   = ((HtmlElement) hoursTable.getFirstByXPath("./tbody/tr[1]/td[1]/font/span")).getTextContent().strip();
+            String    labHours      = ((HtmlElement) hoursTable.getFirstByXPath("./tbody/tr[1]/td[2]/font/span")).getTextContent().strip();
+            String    workHours     = ((HtmlElement) hoursTable.getFirstByXPath("./tbody/tr[1]/td[3]/font/span")).getTextContent().strip();
+            String    courseExtraInfo;
+            if (courseRow.getByXPath("./td[7]/a").size() > 0)
+                courseExtraInfo = ((HtmlElement) courseRow.getFirstByXPath("./td[7]/a")).getAttribute("title").strip();
+            else
+                courseExtraInfo = "";
+            
+            // Why is there a non breaking space in this...
+            courseDates = courseDates.replaceAll("\\u00A0", "");
+            courseNumber = courseNumber.replaceAll("\\u00A0", "");
+            courseSection = courseSection.replaceAll("\\u00A0", "");
+            courseTitle = courseTitle.replaceAll("\\u00A0", "");
+            courseTeacher = courseTeacher.replaceAll("\\u00A0", "");
+            theoryHours = theoryHours.replaceAll("\\u00A0", "");
+            labHours = labHours.replaceAll("\\u00A0", "");
+            workHours = workHours.replaceAll("\\u00A0", "");
+            
+            Pattern datePattern = Pattern.compile("from ([A-Z][a-z]{2}-\\d\\d) to ([A-Z][a-z]{2}-\\d\\d)");
+            Matcher dateMatcher = datePattern.matcher(courseDates);
+            if (!dateMatcher.matches())
+                throw new CalendarParsingException("Dates did not match regex. The date string was: " + courseDates);
+            
+            this.courseList.add(new OmnivoxCourse(courseTitle, courseNumber, Integer.parseInt(courseSection), courseTeacher, this,
+                                                  LocalDate.parse(dateFormat(dateMatcher.group(1))),
+                                                  LocalDate.parse(dateFormat(dateMatcher.group(2))),
+                                                  Duration.ofHours(Long.parseLong(theoryHours)), Duration.ofHours(Long.parseLong(labHours)),
+                                                  Duration.ofHours(Long.parseLong(workHours)), courseExtraInfo));
         }
     }
     
@@ -154,52 +193,13 @@ public class OmnivoxSemester {
                 }
                 k++;
             }
-            
+    
             System.out.print("\n| ");
         }
     }
     
-    private void genCourseList(HtmlTable courseTable) {
-        for (HtmlTableRow courseRow : courseTable.getRows()) {
-            if (courseRow.getCells().size() < 4 || courseRow.getByXPath("./td/font/b/span").size() > 1)
-                continue;
-            // Use String#strip() and not String#trim(), because String#strip() is unicode-aware.
-            String    courseDates   = ((HtmlElement) courseRow.getFirstByXPath("./td[1]/font/span")).getTextContent().strip();
-            String    courseNumber  = ((HtmlElement) courseRow.getFirstByXPath("./td[2]/font/span")).getTextContent().strip();
-            String    courseSection = ((HtmlElement) courseRow.getFirstByXPath("./td[3]/font/span")).getTextContent().strip();
-            String    courseTitle   = ((HtmlElement) courseRow.getFirstByXPath("./td[4]/font/span")).getTextContent().strip();
-            String    courseTeacher = ((HtmlElement) courseRow.getFirstByXPath("./td[5]/font/span")).getTextContent().strip();
-            HtmlTable hoursTable    = courseRow.getFirstByXPath("./td[6]/table");
-            String    theoryHours   = ((HtmlElement) hoursTable.getFirstByXPath("./tbody/tr[1]/td[1]/font/span")).getTextContent().strip();
-            String    labHours      = ((HtmlElement) hoursTable.getFirstByXPath("./tbody/tr[1]/td[2]/font/span")).getTextContent().strip();
-            String    workHours     = ((HtmlElement) hoursTable.getFirstByXPath("./tbody/tr[1]/td[3]/font/span")).getTextContent().strip();
-            String    courseExtraInfo;
-            if (courseRow.getByXPath("./td[7]/a").size() > 0)
-                courseExtraInfo = ((HtmlElement) courseRow.getFirstByXPath("./td[7]/a")).getAttribute("title").strip();
-            else
-                courseExtraInfo = "";
-            
-            // Why is there a non breaking space in this...
-            courseDates = courseDates.replaceAll("\\u00A0", "");
-            courseNumber = courseNumber.replaceAll("\\u00A0", "");
-            courseSection = courseSection.replaceAll("\\u00A0", "");
-            courseTitle = courseTitle.replaceAll("\\u00A0", "");
-            courseTeacher = courseTeacher.replaceAll("\\u00A0", "");
-            theoryHours = theoryHours.replaceAll("\\u00A0", "");
-            labHours = labHours.replaceAll("\\u00A0", "");
-            workHours = workHours.replaceAll("\\u00A0", "");
-            
-            Pattern datePattern = Pattern.compile("from ([A-Z][a-z]{2}-\\d\\d) to ([A-Z][a-z]{2}-\\d\\d)");
-            Matcher dateMatcher = datePattern.matcher(courseDates);
-            if (!dateMatcher.matches())
-                throw new CalendarParsingException("Dates did not match regex. The date string was: " + courseDates);
-            
-            this.courseList.add(new OmnivoxCourse(courseTitle, courseNumber, Integer.parseInt(courseSection), courseTeacher, this,
-                                                  LocalDate.parse(dateFormat(dateMatcher.group(1))),
-                                                  LocalDate.parse(dateFormat(dateMatcher.group(2))),
-                                                  Duration.ofHours(Long.parseLong(theoryHours)), Duration.ofHours(Long.parseLong(labHours)),
-                                                  Duration.ofHours(Long.parseLong(workHours)), courseExtraInfo));
-        }
+    public HtmlPage getPage() {
+        return page;
     }
     
     public List<OmnivoxCourse> getCourseList() {

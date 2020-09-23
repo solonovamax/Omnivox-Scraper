@@ -13,4 +13,6 @@ public interface OmniScraper {
     OmniCalendar getOmniCalendar();
     
     DocumentManager getOmniDocument();
+    
+    void shutdown();
 }
