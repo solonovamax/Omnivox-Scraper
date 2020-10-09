@@ -13,7 +13,8 @@ to something designed to actually function as an API.
 - Functionality may be changed or removed without any prior notice and at any time.
 
 ## Running Tests
-To run the tests, you must set `omnivox_username` and `omnivox_password` in `gradle.properties`.
+To run the tests, you must set `omnivox_username` and `omnivox_password` in `gradle.properties`,
+then you can run `./gradlew test`
 
 ## Contributing
 just open a pull request lmao
