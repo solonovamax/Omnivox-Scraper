@@ -1,0 +1,54 @@
+<!--
+  ~ Copyright (c) 2020 solonovamax <solonovamax@12oclockpoint.com>
+  ~
+  ~       This program is free software: you can redistribute it and/or modify
+  ~       it under the terms of the GNU General Public License as published by
+  ~       the Free Software Foundation, either version 3 of the License, or
+  ~       (at your option) any later version.
+  ~
+  ~       This program is distributed in the hope that it will be useful,
+  ~       but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~       GNU General Public License for more details.
+  ~
+  ~       You should have received a copy of the GNU General Public License
+  ~       along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+
+<configuration>
+    <timestamp key="startTimestamp" datePattern="yyyyMMddHHmmssSSS"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d %highlight(%-5level) [%thread] %logger{15} - %highlight(%msg %n) %xEx</pattern>
+        </encoder>
+        <!--
+        <withJansi>true</withJansi>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d [%thread] %highlight(%-5level) %logger{15} - %highlight(%msg %n) %xEx</Pattern>
+        </layout>
+        -->
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${user.home}/Qev/logs/qev.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- hourly rollover -->
+            <fileNamePattern>${user.home}/Qev/logs/qev.%d{yyyy-MM-dd-HH}.%i.log.zip</fileNamePattern>
+            <!-- keep 60 days worth of history capped at 50GB total size & 10MB per file -->
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>50GB</totalSizeCap>
+            <maxFileSize>10MB</maxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d %highlight(%-5level) [%thread] %logger{15} - %highlight(%msg %n) %xEx</pattern>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG" additivity="false">
+        <appender-ref ref="FILE"/>
+    </root>
+    <logger name="com.solostudios" level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+</configuration>

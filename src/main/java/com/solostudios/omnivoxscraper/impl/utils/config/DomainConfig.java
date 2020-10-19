@@ -1,4 +1,6 @@
-package com.solostudios.omnivoxscraper.impl.config;
+package com.solostudios.omnivoxscraper.impl.utils.config;
+
+import lombok.Getter;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,11 +9,17 @@ import java.nio.charset.StandardCharsets;
 
 
 public class DomainConfig {
+    @Getter
     private String  subDomain;
+    @Getter
     private String  leaSubDomain;
+    @Getter
     private String  omnivoxSite;
+    @Getter
     private boolean usesSubDomain;
+    @Getter
     private URL     mainUrl;
+    @Getter
     private URL     leaUrl;
     
     public DomainConfig() {
@@ -43,18 +51,6 @@ public class DomainConfig {
         return new DomainConfig();
     }
     
-    public URL getMainUrl() {
-        return mainUrl;
-    }
-    
-    public URL getLeaUrl() {
-        return leaUrl;
-    }
-    
-    public String getOmnivoxSite() {
-        return omnivoxSite;
-    }
-    
     public void setOmnivoxSite(String omnivoxSite) throws MalformedURLException {
         if (!URLEncoder.encode(omnivoxSite, StandardCharsets.UTF_8).equals(omnivoxSite)) {
             throw new MalformedURLException("The site is not value!");
@@ -67,20 +63,12 @@ public class DomainConfig {
         return usesSubDomain;
     }
     
-    public String getSubDomain() {
-        return subDomain;
-    }
-    
     public void setSubDomain(String subDomain) throws MalformedURLException {
         if (!URLEncoder.encode(omnivoxSite, StandardCharsets.UTF_8).equals(omnivoxSite)) {
             throw new MalformedURLException("The subdomain is not value!");
         }
         this.subDomain = subDomain;
         this.rebuildUrls();
-    }
-    
-    public String getLeaSubDomain() {
-        return leaSubDomain;
     }
     
     public void setLeaSubDomain(String leaSubDomain) throws MalformedURLException {
