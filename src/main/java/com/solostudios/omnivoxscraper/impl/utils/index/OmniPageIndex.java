@@ -5,6 +5,8 @@ import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.solostudios.omnivoxscraper.impl.OmniScraperImpl;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.Yaml;
@@ -16,13 +18,23 @@ import java.util.Map;
 import java.util.Optional;
 
 
+/**
+ * Index of Services on omnivox.
+ *
+ * @author solonovamax
+ */
 @Slf4j
+@ToString
+@EqualsAndHashCode
 public class OmniPageIndex {
     static        Yaml                yaml = new Yaml();
-    private final OmniScraperImpl     scraper;
-    private final Map<String, String> frenchIndexes;
-    private final Map<String, String> englishIndexes;
     private final Map<String, URL>    serviceUrls;
+    @ToString.Exclude
+    private final OmniScraperImpl     scraper;
+    @ToString.Exclude
+    private final Map<String, String> frenchIndexes;
+    @ToString.Exclude
+    private final Map<String, String> englishIndexes;
     
     public OmniPageIndex(OmniScraperImpl scraper) {
         this.scraper = scraper;

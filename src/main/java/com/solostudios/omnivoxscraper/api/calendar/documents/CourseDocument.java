@@ -1,11 +1,14 @@
 package com.solostudios.omnivoxscraper.api.calendar.documents;
 
 import com.solostudios.omnivoxscraper.api.courses.OmniCourse;
+import org.jetbrains.annotations.NotNull;
 
 
 /**
  * A document given by a specific teacher to a specific class.
  * This document is a downloadable document that is never null.
+ *
+ * @author solonovamax
  */
 public interface CourseDocument extends OmniDocument {
     /**
@@ -13,6 +16,7 @@ public interface CourseDocument extends OmniDocument {
      *
      * @return The course this document belongs to.
      */
+    @NotNull
     OmniCourse getCourse();
     
     /**

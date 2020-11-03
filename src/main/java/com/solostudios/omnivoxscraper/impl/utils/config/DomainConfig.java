@@ -1,6 +1,7 @@
 package com.solostudios.omnivoxscraper.impl.utils.config;
 
-import lombok.Getter;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,18 +9,33 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
+@AllArgsConstructor
+@Accessors(chain = true)
 public class DomainConfig {
-    @Getter
+    
     private String  subDomain;
-    @Getter
     private String  leaSubDomain;
-    @Getter
     private String  omnivoxSite;
-    @Getter
     private boolean usesSubDomain;
-    @Getter
+    /**
+     * The URL for the main Omnivox Service.
+     * <p>
+     * Only modify this if you know what you're doing.
+     *
+     * @param mainUrl The new url for the main Omnivox service.
+     */
     private URL     mainUrl;
-    @Getter
+    /**
+     * The URL for the LEA service.
+     * <p>
+     * Only modify this if you know what you're doing.
+     *
+     * @param leadUrl The new LEA url to set.
+     */
     private URL     leaUrl;
     
     public DomainConfig() {

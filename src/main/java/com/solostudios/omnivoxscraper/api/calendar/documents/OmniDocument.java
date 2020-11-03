@@ -1,6 +1,12 @@
 package com.solostudios.omnivoxscraper.api.calendar.documents;
 
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +25,7 @@ public interface OmniDocument {
      *
      * @return The name of the document.
      */
+    @NotNull
     String getDocumentName();
     
     /**
@@ -29,6 +36,7 @@ public interface OmniDocument {
      *
      * @return The filename belonging to this document.
      */
+    @NotNull
     String getFileName();
     
     /**
@@ -36,6 +44,7 @@ public interface OmniDocument {
      *
      * @return The url belonging to this document.
      */
+    @NotNull
     URL getFileURL();
     
     /**
@@ -45,6 +54,7 @@ public interface OmniDocument {
      *
      * @return The notes belonging to this document.
      */
+    @NotNull
     String getDocumentNotes();
     
     /**
@@ -60,6 +70,7 @@ public interface OmniDocument {
      *
      * @return The date the document was published on.
      */
+    @NotNull
     LocalDate getPublicationDate();
     
     /**
@@ -71,10 +82,11 @@ public interface OmniDocument {
     
     /**
      * Returns the file extension of this document.
-     * If there is no extension, it may be an empty string.
+     * If there is no extension, it may be an empty string, but never will be {@code null}.
      *
      * @return The file extension of this document.
      */
+    @NotNull
     String getFileExtension();
     
     /**
@@ -85,6 +97,7 @@ public interface OmniDocument {
      *
      * @see FileType
      */
+    @NotNull
     FileType getFileType();
     
     /**
@@ -98,12 +111,12 @@ public interface OmniDocument {
          * Standard Microsoft Word document.
          * Pre-XML formats.
          */
-        DOC("Microsoft Word document", "doc"),
+        DOC("Microsoft Word 97-2003 Document", "doc"),
         /**
          * Standard Microsoft Word XML document.
          * Most common document, along with {@link FileType#PDF}.
          */
-        DOCX("Document XML: Microsoft Office 2007 Document in XML format", "docx"),
+        DOCX("Microsoft Word XML Document", "docx"),
         /**
          * Adobe PDF format document.
          * Most common document, along with {@link FileType#DOCX}.
@@ -120,8 +133,12 @@ public interface OmniDocument {
          * nor are they guaranteed to be in a specific encoding scheme.
          */
         OTHER("Unrecognized Format");
-        
-        private static final Map<String, FileType> typeMap = new HashMap<>();
+    
+        private static final Map<String, FileType> typeMap         = new HashMap<>();
+        /**
+         * The regex used to get the extension from any filename or path name.
+         */
+        private static final String                EXTENSION_REGEX = ".*\\.(.+)$";
         static {
             for (FileType fileType : values()) {
                 typeMap.put(fileType.getFileExtension(), fileType);
@@ -129,35 +146,85 @@ public interface OmniDocument {
         }
         private final String name;
         private final String fileExtension;
-        
-        FileType(String name, String fileExtension) {
+    
+        FileType(@NonNull String name, @NonNull String fileExtension) {
             this.name = name;
             this.fileExtension = fileExtension;
         }
-        
-        FileType(String name) {
+    
+        FileType(@NonNull String name) {
             this.name = name;
             this.fileExtension = "";
         }
-        
-        public static FileType getFileTypeWithExtension(String fileExtension) {
-            return typeMap.get(fileExtension);
-        }
-        
-        public static FileType getFileTypeWithName(String fileName) {
-            return getFileTypeWithExtension((fileName.replaceAll(".*\\.(.+)$", "$1").equals(fileName) ?
-                                             "" :
-                                             fileName.replaceAll(".*\\.(.+)$", "$1")));
-        }
-        
+    
+        /**
+         * Uses a URL to get the file type, or {@link #OTHER} if it cannot be found.
+         * This uses {@link URL#getPath()} to retrive the path for a URL.
+         *
+         * @param url The URL to get the file type from.
+         *
+         * @return The filetype of the URL.
+         *
+         * @see #getFileTypeWithName(String)
+         */
+        @SneakyThrows(IOException.class)
         public static FileType getFileTypeWithURL(URL url) {
-            return getFileTypeWithName(url.getPath());
+            String   urlExtension = url.getPath().replaceAll(EXTENSION_REGEX, "$1");
+            FileType fileType     = getFileTypeWithExtension(urlExtension);
+            if (fileType == OTHER) {
+                URLConnection conn = url.openConnection();
+                //get header by 'key'
+                String fileName = conn.getHeaderField("filename");
+                fileType = getFileTypeWithName(fileName);
+            }
+            return fileType;
         }
-        
+    
+        /**
+         * Uses a name of a document to retrieve the known file type for that format, or {@link #OTHER} if it cannot be found.
+         * <p>
+         * This will parse the file name using the REGEX {@code .*\.(.+)$}.
+         * Everything after the last period in the string will be used for the file extension to retrieve the type.
+         *
+         * @param fileName The file name to be parsed for an extension.
+         *
+         * @return The type based on the file extension of the name you provided.
+         */
+        public static FileType getFileTypeWithName(String fileName) {
+            return getFileTypeWithExtension((fileName.replaceAll(EXTENSION_REGEX, "$1").equals(fileName) ?
+                                             "" :
+                                             fileName.replaceAll(EXTENSION_REGEX, "$1")));
+        }
+    
+        /**
+         * Returns the file type from an extension, or {@link #OTHER} if it cannot be found.
+         *
+         * @param fileExtension The extension used to get the file type.
+         *
+         * @return The file type of the provided extension.
+         */
+        public static FileType getFileTypeWithExtension(String fileExtension) {
+            return typeMap.getOrDefault(fileExtension, OTHER);
+        }
+    
+        /**
+         * The never {@code null} extension for a specific file type.
+         * <p>
+         * {@link String#isEmpty()} may evaluate as {@code true} if this file type has no specific file exntesion
+         *
+         * @return A String containing the valid extension for this file type.
+         */
+        @NotNull
         public String getFileExtension() {
             return fileExtension;
         }
-        
+    
+        /**
+         * The name of the document standard.
+         *
+         * @return The name of the document standard.
+         */
+        @NotNull
         public String getName() {
             return name;
         }

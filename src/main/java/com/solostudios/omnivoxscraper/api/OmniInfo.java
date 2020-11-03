@@ -1,5 +1,14 @@
 package com.solostudios.omnivoxscraper.api;
 
+import lombok.experimental.UtilityClass;
+
+
+/**
+ * Contains info that is modified at compile time.
+ *
+ * @author solonovamax
+ */
+@UtilityClass
 @SuppressWarnings({ "ConstantConditions", "unused" })
 public class OmniInfo {
     public static final String GITHUB           = "https://github.com/solonovamax/Omnivox-Scraper";
@@ -11,10 +20,4 @@ public class OmniInfo {
     public static final String VERSION          = VERSION_MAJOR.startsWith("@") ? "dev" : String.format("%s.%s.%s-%s+%s", VERSION_MAJOR,
                                                                                                         VERSION_MINOR, VERSION_PATCH,
                                                                                                         PRE_RELEASE_DATA, GIT_HASH);
-    
-    /**
-     * No fun allowed
-     */
-    private OmniInfo() {
-    }
 }
