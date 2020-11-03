@@ -10,12 +10,14 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.solostudios.omnivoxscraper.api.OmniScraper;
 import com.solostudios.omnivoxscraper.api.calendar.OmniCalendar;
 import com.solostudios.omnivoxscraper.api.calendar.documents.DocumentManager;
-import com.solostudios.omnivoxscraper.impl.utils.OmniPageIndex;
 import com.solostudios.omnivoxscraper.impl.utils.config.AuthConfig;
 import com.solostudios.omnivoxscraper.impl.utils.config.DomainConfig;
+import com.solostudios.omnivoxscraper.impl.utils.index.OmniPageIndex;
+import com.solostudios.omnivoxscraper.impl.utils.index.OmnivoxService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.Yaml;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
@@ -34,21 +36,21 @@ public class OmniScraperImpl implements OmniScraper {
     private final        WebClient      client;
     private final        AuthConfig     authConfig;
     private final        DomainConfig   domainConfig;
-    //        private final Logger        logger = LoggerFactory.getLogger(OmniScraperImpl.class);
     @Getter
     private final        OmniPageIndex  pageIndex;
+    private final        Yaml           yaml;
     @Getter
     private              HtmlPage       homePage;
     
     public OmniScraperImpl(@NotNull AuthConfig authConfig) {
         this(authConfig, DomainConfig.getDefault(), DEFAULT_CHROME_VERSION);
     }
-//    private              Map<String, URL> indexedServices;
     
     public OmniScraperImpl(@NotNull AuthConfig authConfig, @NotNull DomainConfig domainConfig, @NotNull BrowserVersion version) {
         this.authConfig = authConfig;
         this.domainConfig = domainConfig;
         pageIndex = new OmniPageIndex(this);
+        this.yaml = new Yaml();
         
         client = new WebClient(version);
         client.getOptions().setJavaScriptEnabled(true);
@@ -60,11 +62,6 @@ public class OmniScraperImpl implements OmniScraper {
         client.getOptions().setThrowExceptionOnScriptError(false);
         client.getOptions().setSSLClientProtocols(new String[]{ "TLSv1.2" });
         client.setIncorrectnessListener((a, b) -> {});
-
-//        java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.SEVERE);
-//        java.util.logging.Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.SEVERE);
-//        LogFactory.getFactory().setAttribute("com.gargoylesoftware.htmlunit", "org.slf4j.Logger");
-//        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
     }
     
     @Override
@@ -109,11 +106,11 @@ public class OmniScraperImpl implements OmniScraper {
         } catch (IOException e) {
             logger.error("There was an unknown error while trying to login.", e);
         }
-        pageIndex.init(homePage);
+        pageIndex.loadIndexes(homePage);
     }
     
     public void doLogin() {
-        URL      url      = getOmniURL("/Login/Account/Login?L=ANG");
+        URL      url      = getOmniURL("/Login/Account/Login?L=FRA");
         HtmlPage response = null;
         try {
             response = client.getPage(url);
@@ -155,5 +152,13 @@ public class OmniScraperImpl implements OmniScraper {
                                             "you know that you fucked up. " +
                                             "Write better code next time.", e);
         }
+    }
+    
+    public URL getServiceUrl(OmnivoxService omnivoxService) {
+        return pageIndex.getServiceUrl(omnivoxService);
+    }
+    
+    public URL getServiceUrl(String omnivoxService) {
+        return pageIndex.getServiceUrl(omnivoxService);
     }
 }

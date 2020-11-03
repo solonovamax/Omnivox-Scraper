@@ -36,7 +36,8 @@ dependencies {
     implementation("org.mnode.ical4j:ical4j:3.0.19")
     implementation("org.jetbrains:annotations:20.1.0")
     implementation("org.slf4j:slf4j-api:1.7.+")
-    implementation("org.slf4j:jcl-over-slf4j:1.7.30")
+//    implementation("org.slf4j:jcl-over-slf4j:1.7.30")
+    implementation("org.yaml:snakeyaml:1.27")
 
 //    testImplementation("junit:junit:4.13")
     //runtime implementation of slf4j
@@ -157,17 +158,20 @@ tasks.withType<ShadowJar>().configureEach {
 }
 
 val downloadCss = tasks.create("downloadCss") {
-    val url = URL("https://gist.githubusercontent.com/solonovamax/59a5b5bf1acfcb40f93a559d405a87c3/" +
-                  "raw/649d9856bc4e411f76c76f582f31b792b77b635f/javadoc-dark-theme.css")
-    val readableByteChannel = Channels.newChannel(url.openStream())
-    val file = file("${buildDir}/stylesheet/dark-theme.css")
-    file("${buildDir}/stylesheet/").mkdirs()
-    val fileOutputStream = file.outputStream()
-    val fileChannel = fileOutputStream.channel
-    fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
+    doFirst {
+        val url = URL("https://gist.githubusercontent.com/solonovamax/59a5b5bf1acfcb40f93a559d405a87c3/" +
+                      "raw/649d9856bc4e411f76c76f582f31b792b77b635f/javadoc-dark-theme.css")
+        val readableByteChannel = Channels.newChannel(url.openStream())
+        val file = file("${buildDir}/stylesheet/dark-theme.css")
+        file("${buildDir}/stylesheet/").mkdirs()
+        val fileOutputStream = file.outputStream()
+        val fileChannel = fileOutputStream.channel
+        fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
+    }
 }
 
 tasks.javadoc.get().apply {
+    dependsOn(downloadCss)
     source = fileTree(mainDelombokPath)
     dependsOn(delombok)
     
@@ -186,7 +190,6 @@ tasks.javadoc.get().apply {
 //                .openStream()
 
 //        Files.copy(inputStream, Paths.get("${buildDir}/stylesheet/dracula.css"), StandardCopyOption.REPLACE_EXISTING)
-        dependsOn(downloadCss)
         stylesheetFile = file("${buildDir}/stylesheet/dark-theme.css")
     }
 }
@@ -195,10 +198,12 @@ tasks.build {
     dependsOn(tasks.clean)
     dependsOn(tasks.withType<Jar>().toTypedArray())
     dependsOn(tasks.withType<ShadowJar>().toTypedArray())
+    dependsOn(downloadCss)
     
     tasks.jar.get().mustRunAfter(tasks.clean)
     tasks.withType<Jar>().filter { it != tasks.jar.get() }.forEach { it.mustRunAfter(tasks.jar) }
     tasks.withType<ShadowJar>().forEach { it.mustRunAfter(tasks.jar) }
+    tasks.withType<Javadoc>().forEach { it.mustRunAfter(downloadCss) }
 }
 
 tasks.withType<Jar> {
@@ -222,7 +227,7 @@ fun getSecret(key: String): Any {
     return props[key]!!
 }
 
-class Version(val major: String, val minor: String, val revision: String, val preReleaseData: String? = null) {
+data class Version(val major: String, val minor: String, val revision: String, val preReleaseData: String? = null) {
     
     override fun toString(): String {
         return if (preReleaseData.isNullOrBlank())
