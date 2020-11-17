@@ -24,7 +24,7 @@
         </filter>
         <encoder>
             <!--            <pattern>%d %highlight(%-5level) [%thread] %class - %highlight(%msg %n) %xEx</pattern>-->
-            <pattern>%d %-20([%.-20(%thread)]) %highlight(%-5level) %logger{100} - %highlight(%msg){}%n{}%ex{full,
+            <pattern>%d %-20([%.-20(%thread)]) %highlight(%-5level) %logger{40} - %highlight(%msg){}%n{}%ex{full,
                 DISPLAY_EX_EVAL}
             </pattern>
         </encoder>

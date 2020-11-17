@@ -66,7 +66,7 @@ public class OmniPageIndex {
      * @param page The page from which to build the indexes.
      */
     public void loadIndexes(HtmlPage page) {
-        logger.debug("Indexing services");
+        logger.debug("building initial service map");
         Map<String, URL> serviceMap = buildServiceMap(page);
         
         Optional<Map.Entry<String, URL>> randomEntry = serviceMap.entrySet().stream().findFirst();
@@ -75,8 +75,10 @@ public class OmniPageIndex {
             throw new IllegalStateException("The list of services was empty.");
         
         if (englishIndexes.containsValue(randomEntry.get().getKey())) {
+            logger.debug("Remapping with english indexes.");
             buildServicesIndex(serviceMap, englishIndexes);
         } else if (frenchIndexes.containsValue(randomEntry.get().getKey())) {
+            logger.debug("Remapping with french indexes.");
             buildServicesIndex(serviceMap, frenchIndexes);
         } else {
             throw new IllegalStateException("Could not find proper index for random key " + randomEntry.get().getKey());

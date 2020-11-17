@@ -9,9 +9,9 @@ import java.util.List;
 public interface OmniSemester {
     List<OmniCourse> getCourseList();
     
-    List<OmniDay> getDays();
+    List<OmniWeekDay> getDays();
     
-    List<OmniClass>[] getClassList();
+    List<List<OmniClass>> getClassList();
     
     int getSemesterId();
     
@@ -20,6 +20,4 @@ public interface OmniSemester {
     int getYear();
     
     boolean isCurrent();
-    
-    String getSemesterSeason();
 }

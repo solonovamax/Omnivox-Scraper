@@ -11,4 +11,6 @@ public interface TimedEvent extends GenericEvent {
     Duration getEventDuration();
     
     LocalTime getEventStartTime();
+    
+    LocalTime getEventEndTime();
 }

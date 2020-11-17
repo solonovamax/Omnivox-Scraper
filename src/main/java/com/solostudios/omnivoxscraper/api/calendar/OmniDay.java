@@ -4,14 +4,14 @@ package com.solostudios.omnivoxscraper.api.calendar;
 import com.solostudios.omnivoxscraper.api.calendar.events.*;
 import net.fortuna.ical4j.model.component.VEvent;
 
-import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 
 
 public interface OmniDay {
     OmniSemester getSemester();
     
-    DayOfWeek getDay();
+    LocalDate getDate();
     
     List<GenericEvent> getEventList();
     
@@ -24,12 +24,12 @@ public interface OmniDay {
     List<AcademicCalendarEvent> getAcademicEventList();
     
     List<VEvent> getiCalEventList();
-    
-    List<VEvent> getiCalClassEventList();
-    
-    List<VEvent> getiCalLeaEventList();
-    
-    List<VEvent> getiCalCommunityEventList();
-    
-    List<VEvent> getiCalAcademicEventList();
+
+//    List<VEvent> getiCalClassEventList();
+//
+//    List<VEvent> getiCalLeaEventList();
+//
+//    List<VEvent> getiCalCommunityEventList();
+//
+//    List<VEvent> getiCalAcademicEventList();
 }

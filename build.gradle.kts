@@ -34,10 +34,16 @@ repositories {
 dependencies {
     implementation("net.sourceforge.htmlunit:htmlunit:2.43.0")
     implementation("org.mnode.ical4j:ical4j:3.0.19")
+    implementation("net.sf.biweekly:biweekly:+")
     implementation("org.jetbrains:annotations:20.1.0")
     implementation("org.slf4j:slf4j-api:1.7.+")
 //    implementation("org.slf4j:jcl-over-slf4j:1.7.30")
     implementation("org.yaml:snakeyaml:1.27")
+    implementation("com.fasterxml.jackson.core:jackson-core:+")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:+")
+    implementation("com.fasterxml.jackson.core:jackson-databind:+")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:+")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:+")
 
 //    testImplementation("junit:junit:4.13")
     //runtime implementation of slf4j
@@ -87,9 +93,7 @@ val tokenizeJavaSources = task<Copy>(name = "tokenizeJavaSources") {
 val generateJavaSources = task<SourceTask>(name = "generateJavaSources") {
     dependsOn(tokenizeJavaSources)
     exclude("**/old/**")
-    source =
-            mainSourceSet.allJava.asFileTree.matching { name != "OmniInfo.java" } + fileTree(tokenizeJavaSources
-                                                                                                     .destinationDir)
+    source = mainSourceSet.allJava.asFileTree.matching { name != "OmniInfo.java" } + fileTree(tokenizeJavaSources.destinationDir)
 }
 
 val delombokCopy = task<Copy>(name = "delombokCopy") {
@@ -132,7 +136,7 @@ compileJava.apply {
     dependsOn(delombok)
     
     options.encoding = "UTF-8"
-    options.isIncremental = false
+//    options.isIncremental = false
     doFirst {
         options.compilerArgs = mutableListOf("-Xlint:all", "-Xlint:-processing", "--release", "11")
     }

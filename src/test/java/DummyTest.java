@@ -22,11 +22,7 @@ class DummyTest {
         
         OmniScraperImpl scraper = new OmniScraperImpl(config);
         scraper.login();
-
-//        logger.warn("Test!", new Exception());
-        
-        logger.info("Printing services");
-        scraper.getPageIndex().getServiceUrls().forEach((k, v) -> logger.info("Key: {}, Value: {}", k, v));
-//        System.out.println(scraper.getHomePage().asXml());
+    
+    
     }
 }

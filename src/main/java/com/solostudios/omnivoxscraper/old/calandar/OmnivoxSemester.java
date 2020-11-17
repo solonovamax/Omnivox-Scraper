@@ -105,7 +105,7 @@ public class OmnivoxSemester {
             String    labHours      = ((HtmlElement) hoursTable.getFirstByXPath("./tbody/tr[1]/td[2]/font/span")).getTextContent().strip();
             String    workHours     = ((HtmlElement) hoursTable.getFirstByXPath("./tbody/tr[1]/td[3]/font/span")).getTextContent().strip();
             String    courseExtraInfo;
-            if (courseRow.getByXPath("./td[7]/a").size() > 0)
+            if (courseRow.getByXPath("./td[7]/a").isEmpty())
                 courseExtraInfo = ((HtmlElement) courseRow.getFirstByXPath("./td[7]/a")).getAttribute("title").strip();
             else
                 courseExtraInfo = "";

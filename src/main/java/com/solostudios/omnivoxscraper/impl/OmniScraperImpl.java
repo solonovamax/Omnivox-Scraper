@@ -10,11 +10,13 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.solostudios.omnivoxscraper.api.OmniScraper;
 import com.solostudios.omnivoxscraper.api.calendar.OmniCalendar;
 import com.solostudios.omnivoxscraper.api.calendar.documents.DocumentManager;
+import com.solostudios.omnivoxscraper.impl.calendar.OmniCalendarImpl;
 import com.solostudios.omnivoxscraper.impl.utils.config.AuthConfig;
 import com.solostudios.omnivoxscraper.impl.utils.config.DomainConfig;
 import com.solostudios.omnivoxscraper.impl.utils.index.OmniPageIndex;
 import com.solostudios.omnivoxscraper.impl.utils.index.OmnivoxService;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
@@ -29,18 +31,20 @@ import java.util.List;
 
 @Slf4j
 public class OmniScraperImpl implements OmniScraper {
-    private static final BrowserVersion DEFAULT_CHROME_VERSION = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.CHROME)
+    private static final BrowserVersion   DEFAULT_CHROME_VERSION = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.CHROME)
             .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 " +
                           "Safari/537.36")
             .build();
-    private final        WebClient      client;
-    private final        AuthConfig     authConfig;
-    private final        DomainConfig   domainConfig;
+    private final        WebClient        client;
+    private final        AuthConfig       authConfig;
+    private final        DomainConfig     domainConfig;
     @Getter
-    private final        OmniPageIndex  pageIndex;
-    private final        Yaml           yaml;
+    private final        OmniPageIndex    pageIndex;
     @Getter
-    private              HtmlPage       homePage;
+    private final        OmniCalendarImpl calendar;
+    private final        Yaml             yaml;
+    @Getter
+    private              HtmlPage         homePage;
     
     public OmniScraperImpl(@NotNull AuthConfig authConfig) {
         this(authConfig, DomainConfig.getDefault(), DEFAULT_CHROME_VERSION);
@@ -49,9 +53,9 @@ public class OmniScraperImpl implements OmniScraper {
     public OmniScraperImpl(@NotNull AuthConfig authConfig, @NotNull DomainConfig domainConfig, @NotNull BrowserVersion version) {
         this.authConfig = authConfig;
         this.domainConfig = domainConfig;
-        pageIndex = new OmniPageIndex(this);
         this.yaml = new Yaml();
         
+        logger.debug("Constructing Web Client");
         client = new WebClient(version);
         client.getOptions().setJavaScriptEnabled(true);
         client.getOptions().setCssEnabled(false);
@@ -62,16 +66,16 @@ public class OmniScraperImpl implements OmniScraper {
         client.getOptions().setThrowExceptionOnScriptError(false);
         client.getOptions().setSSLClientProtocols(new String[]{ "TLSv1.2" });
         client.setIncorrectnessListener((a, b) -> {});
+        
+        logger.debug("Initializing Index");
+        pageIndex = new OmniPageIndex(this);
+        logger.debug("Initializing Calendar");
+        calendar = new OmniCalendarImpl(this);
     }
     
     @Override
     public String getSubdomain() {
         return domainConfig.getSubDomain();
-    }
-    
-    @Override
-    public WebClient getWebClient() {
-        return null;
     }
     
     @Override
@@ -86,9 +90,16 @@ public class OmniScraperImpl implements OmniScraper {
     
     @Override
     public void shutdown() {
+        //empty because lazy
     }
     
+    public WebClient getWebClient() {
+        return client;
+    }
+    
+    @SneakyThrows(IOException.class)
     public void login() throws LoginException {
+        logger.info("Begining Login process");
         
         if (authConfig.getPassword() == null || authConfig.getPassword().isBlank()) {
             logger.warn("Password was invalid!");
@@ -101,29 +112,21 @@ public class OmniScraperImpl implements OmniScraper {
         
         doLogin();
         
-        try {
-            this.homePage = client.getPage(getOmniURL("/intr"));
-        } catch (IOException e) {
-            logger.error("There was an unknown error while trying to login.", e);
-        }
-        pageIndex.loadIndexes(homePage);
+        initialScraping();
     }
     
+    @SneakyThrows(IOException.class)
     public void doLogin() {
-        URL      url      = getOmniURL("/Login/Account/Login?L=FRA");
+        URL      url      = getOmniURL("/Login/Account/Login?L=ANG");
         HtmlPage response = null;
-        try {
-            response = client.getPage(url);
-        } catch (IOException e) {
-            logger.error("There was an unknown error while attempting ot fetch the login page. Maybe the password was incorrect?", e);
-            System.exit(1);
-        }
+        logger.debug("Getting login page");
+        response = client.getPage(url);
         HtmlForm form = response.getFormByName("formLogin");
         
-        String k = form.getInputByName("k").getValueAttribute();
-        WebRequest loginPostRequest = new WebRequest(
-                getOmniURL("/intr/Module/Identification/Login/Login.aspx"), HttpMethod.POST);
-        List<NameValuePair> requestParams = new ArrayList<>();
+        logger.debug("Filling login form");
+        String              k                = form.getInputByName("k").getValueAttribute();
+        WebRequest          loginPostRequest = new WebRequest(getOmniURL("/intr/Module/Identification/Login/Login.aspx"), HttpMethod.POST);
+        List<NameValuePair> requestParams    = new ArrayList<>();
         requestParams.add(new NameValuePair("NoDA", authConfig.getUsername()));
         requestParams.add(new NameValuePair("PasswordEtu", authConfig.getPassword()));
         requestParams.add(new NameValuePair("TypeIdentification", "Etudiant"));
@@ -131,14 +134,20 @@ public class OmniScraperImpl implements OmniScraper {
         requestParams.add(new NameValuePair("k", k));
         loginPostRequest.setRequestParameters(requestParams);
         
-        try {
-            client.getPage(loginPostRequest);
-        } catch (IOException e) {
-            logger.error("There was an unknown error while to send the login post.", e);
-            System.exit(1);
-        }
+        logger.debug("Completing login POST request");
+        client.getPage(loginPostRequest);
         
         logger.info("Logged in successfully");
+    }
+    
+    private void initialScraping() throws IOException {
+        logger.info("Beggining inital scraping");
+        this.homePage = getPage(getOmniURL("/intr"));
+        logger.info("Indexing services");
+        pageIndex.loadIndexes(homePage);
+        
+        logger.info("Parsing Calendar");
+        calendar.loadPage(getPage(getServiceUrl(OmnivoxService.SCHEDULE)));
     }
     
     public URL getOmniURL(String relativeURL) {
@@ -153,6 +162,15 @@ public class OmniScraperImpl implements OmniScraper {
                                             "Write better code next time.", e);
         }
     }
+    
+    @SneakyThrows
+    public HtmlPage getPage(URL url) {
+        return client.getPage(url);
+    }
+
+//    public void closePage(HtmlPage page) {
+//        client
+//    }
     
     public URL getServiceUrl(OmnivoxService omnivoxService) {
         return pageIndex.getServiceUrl(omnivoxService);
